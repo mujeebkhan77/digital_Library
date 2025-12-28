@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Reading {{ book.title }} - Digital Library{% endblock %}
+
+{% block extra_css %}
+<style>
+    #pdf-viewer {
+        width: 100%;
+        height: calc(100vh - 200px);
+        border: none;
+    }
+    .pdf-container {
+        position: relative;
+        background: #525252;
+    }
+    /* Disable right-click context menu */
+    .pdf-container {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-md p-4 mb-4 flex items-center justify-between">
+        <div>
+            <h1 class="text-xl font-bold text-gray-800">{{ book.title }}</h1>
+            <p class="text-sm text-gray-600">by {{ book.author }}</p>
+        </div>
+        <a href="{% url 'book_detail' book.id %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition">
+            Back to Details
+        </a>
+    </div>
+    
+    {% if error %}
+    <!-- Error Message -->
+    <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg mb-4">
+        <p class="font-semibold">{{ error }}</p>
+    </div>
+    {% else %}
+    <!-- PDF Viewer -->
+    <div class="pdf-container rounded-lg shadow-lg overflow-hidden" oncontextmenu="return false;">
+        {% if pdf_url %}
+        <iframe 
+            id="pdf-viewer"
+            src="{{ pdf_url }}#toolbar=0&navpanes=0&scrollbar=0"
+            type="application/pdf"
+            oncontextmenu="return false;"
+            onselectstart="return false;"
+            oncopy="return false;"
+            oncut="return false;"
+            onpaste="return false;"
+            allow="fullscreen"
+            style="width: 100%; height: calc(100vh - 200px); border: none;"
+        ></iframe>
+        {% else %}
+        <iframe 
+            id="pdf-viewer"
+            src="{% url 'serve_pdf' book.id %}#toolbar=0&navpanes=0&scrollbar=0"
+            type="application/pdf"
+            oncontextmenu="return false;"
+            onselectstart="return false;"
+            oncopy="return false;"
+            oncut="return false;"
+            onpaste="return false;"
+            allow="fullscreen"
+            style="width: 100%; height: calc(100vh - 200px); border: none;"
+        ></iframe>
+        {% endif %}
+    </div>
+    
+    <!-- Disable Print, Save, Download -->
+    <script>
+        // Disable right-click
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        // Disable keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Disable Ctrl+P (Print)
+            if (e.ctrlKey && e.keyCode === 80) {
+                e.preventDefault();
+                return false;
+            }
+            // Disable Ctrl+S (Save)
+            if (e.ctrlKey && e.keyCode === 83) {
+                e.preventDefault();
+                return false;
+            }
+            // Disable Ctrl+D (Bookmark/Download)
+            if (e.ctrlKey && e.keyCode === 68) {
+                e.preventDefault();
+                return false;
+            }
+            // Disable F12 (Developer Tools)
+            if (e.keyCode === 123) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        // Disable text selection
+        document.onselectstart = function() {
+            return false;
+        };
+        
+        // Disable drag and drop
+        document.ondragstart = function() {
+            return false;
+        };
+    </script>
+    {% endif %}
+</div>
+{% endblock %}
+

@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ book.title }} - Digital Library{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="md:flex">
+            <!-- Book Cover -->
+            <div class="md:w-1/3 p-6">
+                {% if book.cover_image %}
+                    <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="w-full rounded-lg shadow-md">
+                {% else %}
+                    <div class="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <svg class="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Book Info -->
+            <div class="md:w-2/3 p-6">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ book.title }}</h1>
+                <p class="text-xl text-gray-600 mb-4">by {{ book.author }}</p>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">{{ book.category }}</span>
+                    <span class="px-3 py-1 {% if book.type == 'free' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %} rounded-full text-sm font-semibold">
+                        {{ book.get_type_display }}
+                    </span>
+                </div>
+                
+                <!-- Rating -->
+                {% if average_rating > 0 %}
+                <div class="mb-4">
+                    <div class="flex items-center">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= average_rating|floatformat:0|add:"0" %}
+                                <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            {% else %}
+                                <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            {% endif %}
+                        {% endfor %}
+                        <span class="ml-2 text-gray-600">({{ average_rating|floatformat:1 }}/5.0)</span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Description</h3>
+                    <p class="text-gray-700 leading-relaxed">{{ book.description }}</p>
+                </div>
+                
+                <div class="flex flex-wrap gap-4 mb-6 text-sm text-gray-600">
+                    <div>
+                        <span class="font-semibold">Views:</span> {{ book.view_count }}
+                    </div>
+                    <div>
+                        <span class="font-semibold">Favorites:</span> {{ book.get_total_favorites }}
+                    </div>
+                    <div>
+                        <span class="font-semibold">Reads:</span> {{ book.get_total_reads }}
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap gap-4">
+                    {% if user.is_authenticated %}
+                        {% if book.type == 'free' %}
+                            <a href="{% url 'read_book' book.id %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                                Read Book
+                            </a>
+                        {% else %}
+                            {% if is_purchased %}
+                                <a href="{% url 'read_book' book.id %}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                                    Read Book
+                                </a>
+                            {% else %}
+                                <a href="{% url 'create_checkout' book.id %}" class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                                    💳 Buy Now ($9.99)
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                        
+                        <!-- Favorite Button -->
+                        <form method="post" action="{% url 'toggle_favourite' book.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="{% if is_favorited %}bg-red-500 hover:bg-red-600{% else %}bg-gray-300 hover:bg-gray-400{% endif %} text-white px-6 py-3 rounded-lg font-semibold transition">
+                                {% if is_favorited %}❤️ Remove from Favorites{% else %}🤍 Add to Favorites{% endif %}
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                            Login to Read
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reviews Section -->
+    <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Reviews</h2>
+        
+        {% if user.is_authenticated and not user_review %}
+        <!-- Add Review Form -->
+        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3">Write a Review</h3>
+            <form method="post" action="{% url 'add_review' book.id %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                    <select name="rating" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Select Rating</option>
+                        <option value="5">5 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="2">2 Stars</option>
+                        <option value="1">1 Star</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Comment</label>
+                    <textarea name="comment" rows="4" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Write your review..."></textarea>
+                </div>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+                    Submit Review
+                </button>
+            </form>
+        </div>
+        {% elif user.is_authenticated and user_review %}
+        <!-- Edit Review -->
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3">Your Review</h3>
+            <div class="mb-2">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= user_review.rating %}
+                        <span class="text-yellow-400">★</span>
+                    {% else %}
+                        <span class="text-gray-300">★</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <p class="text-gray-700 mb-3">{{ user_review.comment }}</p>
+            <div class="flex gap-2">
+                <a href="{% url 'edit_review' user_review.id %}" class="text-blue-600 hover:text-blue-800 text-sm">Edit</a>
+                <form method="post" action="{% url 'delete_review' user_review.id %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Reviews List -->
+        {% if reviews %}
+            <div class="space-y-4">
+                {% for review in reviews %}
+                    <div class="border-b border-gray-200 pb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <span class="font-semibold text-gray-800">{{ review.user.userId }}</span>
+                                <span class="text-sm text-gray-500 ml-2">{{ review.created_at|date:"M d, Y" }}</span>
+                            </div>
+                            <div>
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <span class="text-yellow-400">★</span>
+                                    {% else %}
+                                        <span class="text-gray-300">★</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="text-gray-700">{{ review.comment }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600">No reviews yet. Be the first to review!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

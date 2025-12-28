@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Books - Digital Library{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Browse Books</h1>
+    
+    <!-- Search and Filters -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <form method="get" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Search -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Title, Author, Description..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <!-- Category Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select name="category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">All Categories</option>
+                        {% for cat_code, cat_name in categories %}
+                            <option value="{{ cat_code }}" {% if selected_category == cat_code %}selected{% endif %}>{{ cat_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Author Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Author</label>
+                    <input type="text" name="author" value="{{ selected_author }}" placeholder="Author name..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <!-- Type Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <select name="type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">All Types</option>
+                        <option value="free" {% if selected_type == 'free' %}selected{% endif %}>Free</option>
+                        <option value="paid" {% if selected_type == 'paid' %}selected{% endif %}>Paid</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+                    Apply Filters
+                </button>
+                <a href="{% url 'book_list' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg font-semibold transition">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Books Grid -->
+    {% if page_obj %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            {% for book in page_obj %}
+                {% include 'book_card.html' with book=book %}
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        <div class="flex justify-center">
+            <nav class="flex space-x-2">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_author %}&author={{ selected_author }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" 
+                       class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        Previous
+                    </a>
+                {% endif %}
+                
+                <span class="px-4 py-2 bg-gray-200 rounded-lg">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_author %}&author={{ selected_author }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}" 
+                       class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        Next
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+    {% else %}
+        <div class="text-center py-12 bg-white rounded-lg shadow-md">
+            <p class="text-gray-600 text-lg">No books found matching your criteria.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

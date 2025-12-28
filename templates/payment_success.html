@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Successful - Digital Library{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+        <!-- Success Icon -->
+        <div class="mb-6">
+            <svg class="w-24 h-24 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+        
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Payment Successful!</h1>
+        <p class="text-lg text-gray-600 mb-8">Thank you for your purchase.</p>
+        
+        {% if book %}
+        <div class="bg-gray-50 rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-2">{{ book.title }}</h2>
+            <p class="text-gray-600 mb-4">by {{ book.author }}</p>
+            {% if book.cover_image %}
+                <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="w-32 h-48 object-cover rounded-lg mx-auto mb-4">
+            {% endif %}
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'read_book' book.id %}" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition">
+                Read Book Now
+            </a>
+            <a href="{% url 'book_detail' book.id %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-8 py-3 rounded-lg font-semibold transition">
+                View Book Details
+            </a>
+            <a href="{% url 'purchased_books' %}" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition">
+                My Purchased Books
+            </a>
+        </div>
+        {% else %}
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'purchased_books' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition">
+                View My Purchased Books
+            </a>
+            <a href="{% url 'book_list' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-8 py-3 rounded-lg font-semibold transition">
+                Browse More Books
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
